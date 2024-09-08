@@ -1,25 +1,24 @@
 ﻿using Managment.Models;
 using Newtonsoft.Json;
-using ProjectManagementSystem;
 
 namespace ProjectManagementSystem
 {
     public class UserService : IUserService
     {
-        private string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\users.json");  // Упростим путь для тестирования
+        private string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\users.json");
         private List<User> _users;
 
         public UserService()
         {
             _users = LoadUsers();
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;  // Сохранение при завершении программы
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         }
 
         public void RegisterUser(User user)
         {
             _users.Add(user);
-            Console.WriteLine($"Добавлен пользователь: {user.Username}");  // Проверка
-            SaveUsers();  // Сохранение после регистрации
+            Console.WriteLine($"Добавлен пользователь: {user.Username}");
+            SaveUsers();
         }
 
         private List<User> LoadUsers()
@@ -28,7 +27,7 @@ namespace ProjectManagementSystem
             {
                 var json = File.ReadAllText(_filePath);
                 var users = JsonConvert.DeserializeObject<List<User>>(json);
-                Console.WriteLine($"Загружено пользователей: {users?.Count ?? 0}");  // Проверка загрузки
+                Console.WriteLine($"Загружено пользователей: {users?.Count ?? 0}");
                 return users ?? new List<User>();
             }
             return new List<User>();
@@ -52,7 +51,7 @@ namespace ProjectManagementSystem
         private void OnProcessExit(object sender, EventArgs e)
         {
             Console.WriteLine("Завершение программы... Сохранение данных.");
-            SaveUsers();  // Сохранение при выходе
+            SaveUsers();
             Console.WriteLine("Данные сохранены перед завершением программы.");
         }
     }

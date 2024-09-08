@@ -5,14 +5,14 @@ namespace ProjectManagementSystem
 {
     public static class Utils
     {
-        private static readonly string EncryptionKey = "your-encryption-key"; // Should be more secure
+        private static readonly string EncryptionKey = "your-encryption-key"; 
 
         public static string Encrypt(string text)
         {
             using (var aes = Aes.Create())
             {
                 aes.Key = Encoding.UTF8.GetBytes(EncryptionKey);
-                aes.IV = new byte[16]; // Initialization vector with zeros
+                aes.IV = new byte[16]; 
 
                 var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
                 var bytes = Encoding.UTF8.GetBytes(text);
@@ -34,7 +34,7 @@ namespace ProjectManagementSystem
             using (var aes = Aes.Create())
             {
                 aes.Key = Encoding.UTF8.GetBytes(EncryptionKey);
-                aes.IV = new byte[16]; // Initialization vector with zeros
+                aes.IV = new byte[16]; 
 
                 var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
                 var bytes = Convert.FromBase64String(encryptedText);

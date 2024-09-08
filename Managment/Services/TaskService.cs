@@ -1,12 +1,6 @@
-﻿using Newtonsoft.Json;
-using ProjectManagementSystem;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Managment.Models;
+﻿using Managment.Models;
 using Managment.Services;
+using Newtonsoft.Json;
 
 namespace ProjectManagementSystem
 {
@@ -26,7 +20,7 @@ namespace ProjectManagementSystem
         public void CreateTask(_Task task)
         {
             _tasks.Add(task);
-            SaveTasks(); // Сохраняем задачи в JSON
+            SaveTasks();
             _taskLogService.LogTaskChange(task.ProjectId, task.Assignee, TaskStage.ToDo, task.Status);
         }
 
@@ -38,7 +32,7 @@ namespace ProjectManagementSystem
                 var oldStatus = task.Status;
                 task.Status = newStatus;
                 SaveTasks();
-                // Логирование изменения статуса
+
                 _taskLogService.LogTaskChange(taskId, task.Assignee, oldStatus, newStatus);
             }
         }
@@ -59,7 +53,7 @@ namespace ProjectManagementSystem
             {
                 try
                 {
-                    var json = File.ReadAllText(_filePath);                 
+                    var json = File.ReadAllText(_filePath);
                     return JsonConvert.DeserializeObject<List<_Task>>(json);
                 }
                 catch (Exception ex)

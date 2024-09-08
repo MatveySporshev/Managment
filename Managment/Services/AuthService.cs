@@ -5,7 +5,7 @@ namespace ProjectManagementSystem
 {
     public class AuthService : IAuthService
     {
-        private readonly string UserFile ="users.json";
+        private readonly string UserFile = "users.json";
 
         public User Authenticate(string username, string password)
         {

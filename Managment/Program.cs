@@ -7,14 +7,13 @@ namespace ProjectManagementSystem
     {
         static void Main(string[] args)
         {
-            // Настройка DI-контейнера
+            
             var serviceProvider = new ServiceCollection()
-                .AddSingleton<IAuthService, AuthService>()  // Singleton для AuthService
-                .AddSingleton<IUserService, UserService>()  // Singleton для UserService
-                .AddSingleton<ITaskService, TaskService>()  // Singleton для TaskService
+                .AddSingleton<IAuthService, AuthService>()  
+                .AddSingleton<IUserService, UserService>()  
+                .AddSingleton<ITaskService, TaskService>()  
                 .BuildServiceProvider();
 
-            // Внедрение зависимостей через конструктор
             var app = new ProjectManagementApp(
                 serviceProvider.GetService<IAuthService>(),
                 serviceProvider.GetService<IUserService>(),
@@ -43,7 +42,6 @@ namespace ProjectManagementSystem
 
             Console.WriteLine("Добро пожаловать в систему управления проектами");
 
-            // Цикл аутентификации
             while (true)
             {
                 if (currentUser == null)
@@ -116,7 +114,7 @@ namespace ProjectManagementSystem
 
                             Console.WriteLine("\nСотрудник успешно зарегистрирован.");
                         }
-                        else if (managerOption == "3") // Просмотр логов задач
+                        else if (managerOption == "3") 
                         {
                             Console.WriteLine("\nВведите ID задачи для просмотра логов:");
                             var taskId = Console.ReadLine().Trim();
@@ -139,11 +137,11 @@ namespace ProjectManagementSystem
                         {
                             currentUser = null;
                             Console.WriteLine("\nВы вышли из системы.");
-                            continue; // Вернуться к экрану логина
+                            continue; 
                         }
                         else if (managerOption == "5")
                         {
-                            return; // Завершение работы приложения
+                            return; 
                         }
                     }
                     else if (currentUser.Role == UserRole.Employee)
@@ -169,7 +167,7 @@ namespace ProjectManagementSystem
                             _taskService.UpdateTaskStatus(taskId, status);
                             Console.WriteLine("\nСтатус задачи успешно обновлен.");
                         }
-                        else if (employeeOption == "3") // Просмотр логов для сотрудника
+                        else if (employeeOption == "3") 
                         {
                             Console.WriteLine("\nВведите ID задачи для просмотра логов:");
                             var taskId = Console.ReadLine().Trim();
@@ -192,11 +190,11 @@ namespace ProjectManagementSystem
                         {
                             currentUser = null;
                             Console.WriteLine("\nВы вышли из системы.");
-                            continue; // Вернуться к экрану логина
+                            continue; 
                         }
                         else if (employeeOption == "5")
                         {
-                            return; // Завершение работы приложения
+                            return; 
                         }
                     }
                 }

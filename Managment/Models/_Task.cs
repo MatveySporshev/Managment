@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ProjectManagementSystem;
-using Newtonsoft.Json;
-
-namespace Managment.Models
+﻿namespace Managment.Models
 {
     public enum TaskStage
     {
