@@ -7,11 +7,11 @@ namespace ProjectManagementSystem
     {
         static void Main(string[] args)
         {
-            
+
             var serviceProvider = new ServiceCollection()
-                .AddSingleton<IAuthService, AuthService>()  
-                .AddSingleton<IUserService, UserService>()  
-                .AddSingleton<ITaskService, TaskService>()  
+                .AddSingleton<IAuthService, AuthService>()
+                .AddSingleton<IUserService, UserService>()
+                .AddSingleton<ITaskService, TaskService>()
                 .BuildServiceProvider();
 
             var app = new ProjectManagementApp(

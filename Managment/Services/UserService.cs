@@ -27,7 +27,7 @@ namespace ProjectManagementSystem
             {
                 var json = File.ReadAllText(_filePath);
                 var users = JsonConvert.DeserializeObject<List<User>>(json);
-                Console.WriteLine($"Загружено пользователей: {users?.Count ?? 0}");
+                //Console.WriteLine($"Загружено пользователей: {users?.Count ?? 0}");
                 return users ?? new List<User>();
             }
             return new List<User>();
@@ -37,14 +37,14 @@ namespace ProjectManagementSystem
         {
             try
             {
-                Console.WriteLine($"Сохранение в файл: {Path.GetFullPath(_filePath)}");
+                //Console.WriteLine($"Сохранение в файл: {Path.GetFullPath(_filePath)}");
                 var json = JsonConvert.SerializeObject(_users, Formatting.Indented);
                 File.WriteAllText(_filePath, json);
-                Console.WriteLine("Данные о пользователях успешно записаны.");
+                //Console.WriteLine("Данные о пользователях успешно записаны.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при записи данных: {ex.Message}");
+                //Console.WriteLine($"Ошибка при записи данных: {ex.Message}");
             }
         }
 
