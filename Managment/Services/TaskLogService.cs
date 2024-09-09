@@ -12,26 +12,33 @@ namespace Managment.Services
             _logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "task_logs.json");
         }
 
-        public void LogTaskChange(string taskId, string username, TaskStage oldStatus, TaskStage newStatus)
+        public void LogTaskChange(string taskId, string username, WorkTaskStage oldStatus, WorkTaskStage newStatus)
         {
-            var logEntry = new TaskLog
+            if (Guid.TryParse(taskId, out Guid guid))
             {
-                TaskId = taskId,
-                Username = username,
-                OldStatus = oldStatus,
-                NewStatus = newStatus,
-                Timestamp = DateTime.Now
-            };
+                var logEntry = new TaskLog
+                {
+                    TaskId = guid,
+                    Username = username,
+                    OldStatus = oldStatus,
+                    NewStatus = newStatus,
+                    Timestamp = DateTime.Now
+                };
 
-            List<TaskLog> logs = LoadLogs();
-            logs.Add(logEntry);
-            SaveLogs(logs);
+                List<TaskLog> logs = LoadLogs();
+                logs.Add(logEntry);
+                SaveLogs(logs);
+            }
+            else
+            {
+                Console.WriteLine("\nНеверный формат Guid задачи.");
+            }
         }
 
         public List<TaskLog> ViewLogsForTask(string taskId)
         {
             var logs = LoadLogs();
-            return logs.Where(log => log.TaskId == taskId).ToList();
+            return logs.Where(log => log.TaskId == Guid.Parse(taskId)).ToList();
         }
 
         private List<TaskLog> LoadLogs()

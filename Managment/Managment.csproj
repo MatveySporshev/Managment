@@ -13,14 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="tasks.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="TasksList.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="users.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="UsersList.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

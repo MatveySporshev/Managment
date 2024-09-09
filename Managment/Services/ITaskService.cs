@@ -4,9 +4,11 @@ namespace ProjectManagementSystem
 {
     public interface ITaskService
     {
-        void CreateTask(_Task task);
-        void UpdateTaskStatus(string taskId, TaskStage status);
-        public _Task[] GetTasksForUser(string username);
-        List<TaskLog> ViewTaskLogs(string taskId);
+        void CreateTask(WorkTask task);
+        void UpdateTaskStatus(string taskId, WorkTaskStage status);
+        public WorkTask[] GetTasksForUser(string username);
+        List<TaskLog> ViewTaskLogs(Guid taskId);
+        public WorkTask[] GetAllTasks();
+    
     }
 }

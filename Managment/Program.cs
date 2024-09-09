@@ -7,7 +7,6 @@ namespace ProjectManagementSystem
     {
         static void Main(string[] args)
         {
-
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<IAuthService, AuthService>()
                 .AddSingleton<IUserService, UserService>()
@@ -34,6 +33,8 @@ namespace ProjectManagementSystem
             _authService = authService;
             _userService = userService;
             _taskService = taskService;
+
+            GenerateStartData();
         }
 
         public void Run()
@@ -47,159 +48,306 @@ namespace ProjectManagementSystem
                 if (currentUser == null)
                 {
                     Console.WriteLine("\n1. Войти\n2. Завершить работу");
-                    var option = Console.ReadLine();
+                    var option = Console.ReadLine().Trim();
 
-                    if (option == "2") return;
-
-                    Console.WriteLine("\nВведите имя пользователя:");
-                    var username = Console.ReadLine().Trim();
-
-                    Console.WriteLine("\nВведите пароль:");
-                    var password = Console.ReadLine().Trim();
-
-                    currentUser = _authService.Authenticate(username, password);
-
-                    if (currentUser == null)
+                    switch (option)
                     {
-                        Console.WriteLine("\nНеверные учетные данные. Попробуйте снова.");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"\nДобро пожаловать, {currentUser.Username}!");
+                        case "1":
+                            Console.WriteLine("\nВведите имя пользователя:");
+                            var username = Console.ReadLine().Trim();
+                            if (string.IsNullOrWhiteSpace(username))
+                            {
+                                Console.WriteLine("Имя пользователя не может быть пустым. Попробуйте снова.");
+                                continue;
+                            }
+
+                            Console.WriteLine("\nВведите пароль:");
+                            var password = Console.ReadLine().Trim();
+                            if (string.IsNullOrWhiteSpace(password))
+                            {
+                                Console.WriteLine("Пароль не может быть пустым. Попробуйте снова.");
+                                continue;
+                            }
+
+                            currentUser = _authService.Authenticate(username, password);
+
+                            if (currentUser == null)
+                            {
+                                Console.WriteLine("\nНеверные учетные данные. Попробуйте снова.");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"\nДобро пожаловать, {currentUser.Username}!");
+                            }
+                            break;
+
+                        case "2":
+                            return;
+
+                        default:
+                            Console.WriteLine("\nВведены неверные данные. Попробуйте снова.");
+                            break;
                     }
                 }
                 else
                 {
-                    if (currentUser.Role == UserRole.Manager)
+                    switch (currentUser.Role)
                     {
-                        Console.WriteLine("\n1. Создать задачу\n2. Зарегистрировать сотрудника\n3. Просмотреть логи задач\n4. Выйти из системы\n5. Завершить работу");
-                        var managerOption = Console.ReadLine();
+                        case UserRole.Manager:
+                            Console.WriteLine("\n1. Создать задачу\n2. Зарегистрировать сотрудника\n3. Просмотреть логи задач\n4. Просмотреть все задачи\n5. Просмотреть всех сотрудников\n6. Удалить сотрудника\n7. Выйти из системы\n8. Завершить работу");
+                            var managerOption = Console.ReadLine().Trim();
 
-                        if (managerOption == "1")
-                        {
-                            Console.WriteLine("\nВведите ID проекта:");
-                            var projectId = Console.ReadLine().Trim();
-                            Console.WriteLine("\nВведите название задачи:");
-                            var title = Console.ReadLine().Trim();
-                            Console.WriteLine("\nВведите описание задачи:");
-                            var description = Console.ReadLine().Trim();
-                            Console.WriteLine("\nНазначить задачу (имя пользователя сотрудника):");
-                            var assignee = Console.ReadLine().Trim();
-
-                            var task = new _Task
+                            switch (managerOption)
                             {
-                                ProjectId = projectId,
-                                Title = title,
-                                Description = description,
-                                Assignee = assignee,
-                                Status = TaskStage.ToDo
-                            };
+                                case "1":
+                                    Console.WriteLine("\nВведите название задачи:");
+                                    var title = Console.ReadLine().Trim();
+                                    if (string.IsNullOrWhiteSpace(title))
+                                    {
+                                        Console.WriteLine("Название задачи не может быть пустым. Попробуйте снова.");
+                                        continue;
+                                    }
 
-                            _taskService.CreateTask(task);
-                            Console.WriteLine("\nЗадача успешно создана.");
-                        }
-                        else if (managerOption == "2")
-                        {
-                            Console.WriteLine("\nВведите имя нового сотрудника:");
-                            var newUsername = Console.ReadLine().Trim();
-                            Console.WriteLine("\nВведите пароль нового сотрудника:");
-                            var newPassword = Console.ReadLine().Trim();
+                                    Console.WriteLine("\nВведите описание задачи:");
+                                    var description = Console.ReadLine().Trim();
+                                    if (string.IsNullOrWhiteSpace(description))
+                                    {
+                                        Console.WriteLine("Описание задачи не может быть пустым. Попробуйте снова.");
+                                        continue;
+                                    }
 
-                            _userService.RegisterUser(new User
-                            {
-                                Username = newUsername,
-                                Password = newPassword,
-                                Role = UserRole.Employee
-                            });
+                                    Console.WriteLine("\nНазначить задачу (имя пользователя сотрудника):");
+                                    var assignee = Console.ReadLine().Trim();
+                                    if (string.IsNullOrWhiteSpace(assignee))
+                                    {
+                                        Console.WriteLine("Имя пользователя не может быть пустым. Попробуйте снова.");
+                                        continue;
+                                    }
 
-                            Console.WriteLine("\nСотрудник успешно зарегистрирован.");
-                        }
-                        else if (managerOption == "3") 
-                        {
-                            Console.WriteLine("\nВведите ID задачи для просмотра логов:");
-                            var taskId = Console.ReadLine().Trim();
+                                    var task = new WorkTask
+                                    {
+                                        ProjectId = Guid.NewGuid(),
+                                        Title = title,
+                                        Description = description,
+                                        Assignee = assignee,
+                                        Status = WorkTaskStage.ToDo
+                                    };
 
-                            var logs = _taskService.ViewTaskLogs(taskId);
-                            if (logs.Count == 0)
-                            {
-                                Console.WriteLine("\nЛоги для данной задачи отсутствуют.");
+                                    _taskService.CreateTask(task);
+                                    Console.WriteLine("\nЗадача успешно создана.");
+                                    break;
+
+                                case "2":
+                                    Console.WriteLine("\nВведите имя нового сотрудника:");
+                                    var newUsername = Console.ReadLine().Trim();
+                                    if (string.IsNullOrWhiteSpace(newUsername))
+                                    {
+                                        Console.WriteLine("Имя нового сотрудника не может быть пустым. Попробуйте снова.");
+                                        continue;
+                                    }
+
+                                    Console.WriteLine("\nВведите пароль нового сотрудника:");
+                                    var newPassword = Console.ReadLine().Trim();
+                                    if (string.IsNullOrWhiteSpace(newPassword))
+                                    {
+                                        Console.WriteLine("Пароль не может быть пустым. Попробуйте снова.");
+                                        continue;
+                                    }
+
+                                    _userService.RegisterUser(new User
+                                    {
+                                        Username = newUsername,
+                                        Password = newPassword,
+                                        Role = UserRole.Employee
+                                    });
+                                    Console.WriteLine("\nСотрудник успешно зарегистрирован.");
+                                    break;
+
+                                case "3":
+                                    Console.WriteLine("\nВведите ID задачи для просмотра логов:");
+                                    var taskId = Console.ReadLine().Trim();
+
+                                    if (!Guid.TryParse(taskId, out var taskGuid))
+                                    {
+                                        Console.WriteLine("Неверный формат ID задачи. Попробуйте снова.");
+                                        continue;
+                                    }
+
+                                    var logs = _taskService.ViewTaskLogs(taskGuid);
+                                    if (logs.Count == 0)
+                                    {
+                                        Console.WriteLine("\nЛоги для данной задачи отсутствуют.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"\nЛоги для задачи {taskId}:");
+                                        foreach (var log in logs)
+                                        {
+                                            Console.WriteLine($"{log.Timestamp}: {log.Username} изменил статус с {log.OldStatus} на {log.NewStatus}");
+                                        }
+                                    }
+                                    break;
+
+                                case "4": // Просмотр всех задач
+                                    var allTasks = _taskService.GetAllTasks();
+                                    if (allTasks.Length == 0)
+                                    {
+                                        Console.WriteLine("\nЗадачи отсутствуют.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("\nВсе задачи:");
+                                        foreach (var taskItem in allTasks)
+                                        {
+                                            Console.WriteLine($"\n{taskItem.ProjectId} - {taskItem.Title} ({taskItem.Description}): {taskItem.Status}, назначено: {taskItem.Assignee}");
+                                        }
+                                    }
+                                    break;
+
+                                case "5": // Просмотр всех сотрудников
+                                    var allUsers = _userService.GetAllUsers();
+                                    if (allUsers.Length == 0)
+                                    {
+                                        Console.WriteLine("\nСотрудники отсутствуют.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("\nВсе сотрудники:");
+                                        foreach (var user in allUsers)
+                                        {
+                                            Console.WriteLine($"Имя пользователя: {user.Username}, Роль: {user.Role}");
+                                        }
+                                    }
+                                    break;
+
+                                case "6": // Удаление сотрудника
+                                    Console.WriteLine("\nВведите имя пользователя для удаления:");
+                                    var usernameToDelete = Console.ReadLine().Trim();
+                                    if (string.IsNullOrWhiteSpace(usernameToDelete))
+                                    {
+                                        Console.WriteLine("Имя пользователя не может быть пустым. Попробуйте снова.");
+                                        continue;
+                                    }
+                                    
+                                    if (_userService.DeleteUser(usernameToDelete))
+                                    {
+                                        Console.WriteLine("\nПользователь успешно удален.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("\nПользователь не найден.");
+                                    }
+                                    break;
+
+                                case "7":
+                                    currentUser = null;
+                                    Console.WriteLine("\nВы вышли из системы.");
+                                    break;
+
+                                case "8":
+                                    return;
+
+                                default:
+                                    Console.WriteLine("\nНеверная опция, попробуйте снова.");
+                                    break;
                             }
-                            else
-                            {
-                                Console.WriteLine($"\nЛоги для задачи {taskId}:");
-                                foreach (var log in logs)
-                                {
-                                    Console.WriteLine($"{log.Timestamp}: {log.Username} изменил статус с {log.OldStatus} на {log.NewStatus}");
-                                }
-                            }
-                        }
-                        else if (managerOption == "4")
-                        {
-                            currentUser = null;
-                            Console.WriteLine("\nВы вышли из системы.");
-                            continue; 
-                        }
-                        else if (managerOption == "5")
-                        {
-                            return; 
-                        }
-                    }
-                    else if (currentUser.Role == UserRole.Employee)
-                    {
-                        Console.WriteLine("\n1. Просмотреть задачи\n2. Изменить статус задачи\n3. Просмотреть логи задачи\n4. Выйти из системы\n5. Завершить работу");
-                        var employeeOption = Console.ReadLine();
+                            break;
 
-                        if (employeeOption == "1")
-                        {
-                            var tasks = _taskService.GetTasksForUser(currentUser.Username);
-                            foreach (var task in tasks)
-                            {
-                                Console.WriteLine($"\n{task.ProjectId} - {task.Title} ({task.Description}): {task.Status}");
-                            }
-                        }
-                        else if (employeeOption == "2")
-                        {
-                            Console.WriteLine("\nВведите ID задачи для обновления:");
-                            var taskId = Console.ReadLine().Trim();
-                            Console.WriteLine("\nВведите новый статус (ToDo, InProgress, Done):");
-                            var status = (TaskStage)Enum.Parse(typeof(TaskStage), Console.ReadLine().Trim(), true);
+                        case UserRole.Employee:
+                            Console.WriteLine("\n1. Просмотреть задачи\n2. Изменить статус задачи\n3. Просмотреть логи задачи\n4. Выйти из системы\n5. Завершить работу");
+                            var employeeOption = Console.ReadLine().Trim();
 
-                            _taskService.UpdateTaskStatus(taskId, status);
-                            Console.WriteLine("\nСтатус задачи успешно обновлен.");
-                        }
-                        else if (employeeOption == "3") 
-                        {
-                            Console.WriteLine("\nВведите ID задачи для просмотра логов:");
-                            var taskId = Console.ReadLine().Trim();
+                            switch (employeeOption)
+                            {
+                                case "1":
+                                    var tasks = _taskService.GetTasksForUser(currentUser.Username);
+                                    foreach (var task in tasks)
+                                    {
+                                        Console.WriteLine($"\n{task.ProjectId} - {task.Title} ({task.Description}): {task.Status}");
+                                    }
 
-                            var logs = _taskService.ViewTaskLogs(taskId);
-                            if (logs.Count == 0)
-                            {
-                                Console.WriteLine("\nЛоги для данной задачи отсутствуют.");
+                                    if (tasks.Length == 0)
+                                        Console.WriteLine("\nУ вас нет задач.");
+                                    break;
+
+                                case "2":
+                                    Console.WriteLine("\nВведите ID задачи для обновления:");
+                                    var taskIdToUpdate = Console.ReadLine().Trim();
+
+                                    if (!Guid.TryParse(taskIdToUpdate, out var taskGuidToUpdate))
+                                    {
+                                        Console.WriteLine("Неверный формат ID задачи. Попробуйте снова.");
+                                        continue;
+                                    }
+
+                                    Console.WriteLine("\nВведите новый статус (ToDo, InProgress, Done):");
+                                    var statusInput = Console.ReadLine().Trim();
+                                    if (!Enum.TryParse<WorkTaskStage>(statusInput, true, out var status) ||
+                                        !(status == WorkTaskStage.ToDo || status == WorkTaskStage.InProgress || status == WorkTaskStage.Done))
+                                    {
+                                        Console.WriteLine("Неверный статус задачи, попробуйте снова.");
+                                        continue;
+                                    }
+
+                                    _taskService.UpdateTaskStatus(taskGuidToUpdate.ToString(), status);
+                                    Console.WriteLine("\nСтатус задачи обновлен.");
+                                    break;
+
+                                case "3":
+                                    Console.WriteLine("\nВведите ID задачи для просмотра логов:");
+                                    var taskIdToViewLogs = Console.ReadLine().Trim();
+
+                                    if (!Guid.TryParse(taskIdToViewLogs, out var taskGuidToViewLogs))
+                                    {
+                                        Console.WriteLine("Неверный формат ID задачи. Попробуйте снова.");
+                                        continue;
+                                    }
+
+                                    var taskLogs = _taskService.ViewTaskLogs(taskGuidToViewLogs);
+                                    if (taskLogs.Count == 0)
+                                    {
+                                        Console.WriteLine("\nЛоги для данной задачи отсутствуют.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"\nЛоги для задачи {taskIdToViewLogs}:");
+                                        foreach (var log in taskLogs)
+                                        {
+                                            Console.WriteLine($"{log.Timestamp}: {log.Username} изменил статус с {log.OldStatus} на {log.NewStatus}");
+                                        }
+                                    }
+                                    break;
+
+                                case "4":
+                                    currentUser = null;
+                                    Console.WriteLine("\nВы вышли из системы.");
+                                    break;
+
+                                case "5":
+                                    return;
+
+                                default:
+                                    Console.WriteLine("\nНеверная опция, попробуйте снова.");
+                                    break;
                             }
-                            else
-                            {
-                                Console.WriteLine($"\nЛоги для задачи {taskId}:");
-                                foreach (var log in logs)
-                                {
-                                    Console.WriteLine($"{log.Timestamp}: {log.Username} изменил статус с {log.OldStatus} на {log.NewStatus}");
-                                }
-                            }
-                        }
-                        else if (employeeOption == "4")
-                        {
-                            currentUser = null;
-                            Console.WriteLine("\nВы вышли из системы.");
-                            continue; 
-                        }
-                        else if (employeeOption == "5")
-                        {
-                            return; 
-                        }
+                            break;
+
+                        default:
+                            Console.WriteLine("Неизвестная роль пользователя.");
+                            break;
                     }
                 }
             }
         }
-    }
 
+        private void GenerateStartData()
+        {
+            _userService.RegisterUser(new User
+            {
+                Username = "manager",
+                Password = "123",
+                Role = UserRole.Manager
+            });
+        }
+    }
 }

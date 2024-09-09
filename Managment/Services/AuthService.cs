@@ -17,6 +17,7 @@ namespace ProjectManagementSystem
         {
             if (!File.Exists(UserFile)) return new List<User>();
             var json = File.ReadAllText(UserFile);
+            json = Utils.Decrypt(json);
             return JsonConvert.DeserializeObject<List<User>>(json) ?? new List<User>();
         }
     }

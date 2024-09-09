@@ -1,17 +1,17 @@
 ﻿namespace Managment.Models
 {
-    public enum TaskStage
+    public enum WorkTaskStage
     {
         ToDo,
         InProgress,
         Done
     }
-    public class _Task
+    public class WorkTask
     {
-        public string ProjectId { get; set; }
+        public Guid ProjectId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Assignee { get; set; }
-        public TaskStage Status { get; set; }
+        public WorkTaskStage Status { get; set; }
     }
 }

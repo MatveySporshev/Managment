@@ -1,55 +1,31 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-
-namespace ProjectManagementSystem
+﻿namespace ProjectManagementSystem
 {
     public static class Utils
     {
-        private static readonly string EncryptionKey = "your-encryption-key"; 
+        private static int step = 4;
 
         public static string Encrypt(string text)
         {
-            using (var aes = Aes.Create())
+            var newText = string.Empty;
+
+            foreach (var charText in text)
             {
-                aes.Key = Encoding.UTF8.GetBytes(EncryptionKey);
-                aes.IV = new byte[16]; 
-
-                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-                var bytes = Encoding.UTF8.GetBytes(text);
-
-                using (var ms = new MemoryStream())
-                {
-                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                    {
-                        cs.Write(bytes, 0, bytes.Length);
-                        cs.FlushFinalBlock();
-                        return Convert.ToBase64String(ms.ToArray());
-                    }
-                }
+                newText += Convert.ToChar(charText + step);
             }
+
+            return newText;
         }
 
         public static string Decrypt(string encryptedText)
         {
-            using (var aes = Aes.Create())
+            var newText = string.Empty;
+
+            foreach (var charText in encryptedText)
             {
-                aes.Key = Encoding.UTF8.GetBytes(EncryptionKey);
-                aes.IV = new byte[16]; 
-
-                var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-                var bytes = Convert.FromBase64String(encryptedText);
-
-                using (var ms = new MemoryStream(bytes))
-                {
-                    using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (var sr = new StreamReader(cs))
-                        {
-                            return sr.ReadToEnd();
-                        }
-                    }
-                }
+                newText += Convert.ToChar(charText - step);
             }
+
+            return newText;
         }
     }
 }

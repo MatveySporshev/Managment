@@ -1,14 +1,15 @@
 ﻿using Managment.Models;
 using Managment.Services;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace ProjectManagementSystem
 {
     public class TaskService : ITaskService
     {
-        private string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\tasks.json");
+        private readonly string _filePath = Path.Combine(Environment.CurrentDirectory, "tasks.json");
 
-        private List<_Task> _tasks;
+        private List<WorkTask> _tasks;
         private TaskLogService _taskLogService;
 
         public TaskService()
@@ -17,53 +18,69 @@ namespace ProjectManagementSystem
             _taskLogService = new TaskLogService();
         }
 
-        public void CreateTask(_Task task)
+        public void CreateTask(WorkTask task)
         {
             _tasks.Add(task);
             SaveTasks();
-            _taskLogService.LogTaskChange(task.ProjectId, task.Assignee, TaskStage.ToDo, task.Status);
+            _taskLogService.LogTaskChange(task.ProjectId.ToString(), task.Assignee, WorkTaskStage.ToDo, task.Status);
         }
 
-        public void UpdateTaskStatus(string taskId, TaskStage newStatus)
+        public void UpdateTaskStatus(string taskId, WorkTaskStage newStatus)
         {
-            var task = _tasks.FirstOrDefault(t => t.ProjectId == taskId);
-            if (task != null)
+            if (Guid.TryParse(taskId, out Guid guid))
             {
-                var oldStatus = task.Status;
-                task.Status = newStatus;
-                SaveTasks();
+                var task = _tasks.FirstOrDefault(t => t.ProjectId == guid);
+                if (task != null)
+                {
+                    var oldStatus = task.Status;
+                    task.Status = newStatus;
+                    SaveTasks();
 
-                _taskLogService.LogTaskChange(taskId, task.Assignee, oldStatus, newStatus);
+                    _taskLogService.LogTaskChange(guid.ToString(), task.Assignee, oldStatus, newStatus);
+
+                    Console.WriteLine("\nСтатус задачи успешно обновлен.");
+                }
+                else
+                {
+                    Console.WriteLine("\nЗадача с таким id не найдена.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\nНеверный формат id задачи.");
             }
         }
 
-        public List<TaskLog> ViewTaskLogs(string taskId)
+        public List<TaskLog> ViewTaskLogs(Guid taskId)
         {
-            return _taskLogService.ViewLogsForTask(taskId);
+
+            return _taskLogService.ViewLogsForTask(taskId.ToString());
+
         }
 
-        public _Task[] GetTasksForUser(string username)
+        public WorkTask[] GetTasksForUser(string username)
         {
             return _tasks.Where(t => t.Assignee == username).ToArray();
         }
 
-        private List<_Task> LoadTasks()
+        private List<WorkTask> LoadTasks()
         {
             if (File.Exists(_filePath))
             {
                 try
                 {
                     var json = File.ReadAllText(_filePath);
-                    return JsonConvert.DeserializeObject<List<_Task>>(json);
+                    return JsonConvert.DeserializeObject<List<WorkTask>>(json)
+                        ?? new List<WorkTask>();
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Ошибка при загрузке задач: {ex.Message}");
-                    return new List<_Task>();
+                    return new List<WorkTask>();
                 }
             }
 
-            return new List<_Task>();
+            return new List<WorkTask>();
         }
 
         private void SaveTasks()
@@ -79,6 +96,12 @@ namespace ProjectManagementSystem
                 Console.WriteLine($"Ошибка при записи задач: {ex.Message}");
             }
         }
+
+        public WorkTask[] GetAllTasks()
+        {
+            return _tasks.ToArray();
+        }
+
 
 
     }
