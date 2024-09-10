@@ -1,6 +1,7 @@
 ﻿using Managment.Models;
 using Managment.Services;
 using Newtonsoft.Json;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace ProjectManagementSystem
@@ -11,18 +12,27 @@ namespace ProjectManagementSystem
 
         private List<WorkTask> _tasks;
         private TaskLogService _taskLogService;
+        private readonly IUserService _userService;
 
         public TaskService()
         {
             _tasks = LoadTasks();
             _taskLogService = new TaskLogService();
+            
         }
 
         public void CreateTask(WorkTask task)
         {
-            _tasks.Add(task);
+            if (!_userService.UserExists(task.Assignee))
+            {
+                throw new ArgumentException("Невозможно назначить задачу на несуществующего сотрудника.");
+            }
+            else
+            {
+                _tasks.Add(task);
             SaveTasks();
             _taskLogService.LogTaskChange(task.ProjectId.ToString(), task.Assignee, WorkTaskStage.ToDo, task.Status);
+            }
         }
 
         public void UpdateTaskStatus(string taskId, WorkTaskStage newStatus)
@@ -100,6 +110,18 @@ namespace ProjectManagementSystem
         public WorkTask[] GetAllTasks()
         {
             return _tasks.ToArray();
+        }
+
+        public bool DeleteTask(Guid taskId)
+        {
+            var task = _tasks.FirstOrDefault(t => t.ProjectId == taskId);
+            if (task != null)
+            {
+                _tasks.Remove(task);
+                
+                return true;
+            }
+            return false;
         }
 
 

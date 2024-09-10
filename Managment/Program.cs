@@ -94,7 +94,7 @@ namespace ProjectManagementSystem
                     switch (currentUser.Role)
                     {
                         case UserRole.Manager:
-                            Console.WriteLine("\n1. Создать задачу\n2. Зарегистрировать сотрудника\n3. Просмотреть логи задач\n4. Просмотреть все задачи\n5. Просмотреть всех сотрудников\n6. Удалить сотрудника\n7. Выйти из системы\n8. Завершить работу");
+                            Console.WriteLine("\n1. Создать задачу\n2. Зарегистрировать сотрудника\n3. Просмотреть логи задач\n4. Просмотреть все задачи\n5. Просмотреть всех сотрудников\n6. Удалить сотрудника\n7. Удалить задачу\n8. Выйти из системы\n9. Завершить работу");
                             var managerOption = Console.ReadLine().Trim();
 
                             switch (managerOption)
@@ -118,23 +118,24 @@ namespace ProjectManagementSystem
 
                                     Console.WriteLine("\nНазначить задачу (имя пользователя сотрудника):");
                                     var assignee = Console.ReadLine().Trim();
-                                    if (string.IsNullOrWhiteSpace(assignee))
+                                    if (_userService.UserExists(assignee))
                                     {
-                                        Console.WriteLine("Имя пользователя не может быть пустым. Попробуйте снова.");
-                                        continue;
+                                        var task = new WorkTask
+                                        {
+                                            ProjectId = Guid.NewGuid(),
+                                            Title = title,
+                                            Description = description,
+                                            Assignee = assignee,
+                                            Status = WorkTaskStage.ToDo
+                                        };
+
+                                        _taskService.CreateTask(task);
+                                        Console.WriteLine("\nЗадача успешно создана.");
                                     }
-
-                                    var task = new WorkTask
+                                    else
                                     {
-                                        ProjectId = Guid.NewGuid(),
-                                        Title = title,
-                                        Description = description,
-                                        Assignee = assignee,
-                                        Status = WorkTaskStage.ToDo
-                                    };
-
-                                    _taskService.CreateTask(task);
-                                    Console.WriteLine("\nЗадача успешно создана.");
+                                        Console.WriteLine("\nНазначение задачи на несуществующего сотрудника невозможно. Попробуйте снова.");
+                                    }
                                     break;
 
                                 case "2":
@@ -160,7 +161,7 @@ namespace ProjectManagementSystem
                                         Password = newPassword,
                                         Role = UserRole.Employee
                                     });
-                                    Console.WriteLine("\nСотрудник успешно зарегистрирован.");
+
                                     break;
 
                                 case "3":
@@ -180,7 +181,7 @@ namespace ProjectManagementSystem
                                     }
                                     else
                                     {
-                                        Console.WriteLine($"\nЛоги для задачи {taskId}:");
+                                        Console.WriteLine($"\nЛоги для задачи id: {taskId}:");
                                         foreach (var log in logs)
                                         {
                                             Console.WriteLine($"{log.Timestamp}: {log.Username} изменил статус с {log.OldStatus} на {log.NewStatus}");
@@ -188,7 +189,7 @@ namespace ProjectManagementSystem
                                     }
                                     break;
 
-                                case "4": // Просмотр всех задач
+                                case "4":
                                     var allTasks = _taskService.GetAllTasks();
                                     if (allTasks.Length == 0)
                                     {
@@ -199,12 +200,12 @@ namespace ProjectManagementSystem
                                         Console.WriteLine("\nВсе задачи:");
                                         foreach (var taskItem in allTasks)
                                         {
-                                            Console.WriteLine($"\n{taskItem.ProjectId} - {taskItem.Title} ({taskItem.Description}): {taskItem.Status}, назначено: {taskItem.Assignee}");
+                                            Console.WriteLine($"\nid: {taskItem.ProjectId} - {taskItem.Title} ({taskItem.Description}): {taskItem.Status}, назначено: {taskItem.Assignee}");
                                         }
                                     }
                                     break;
 
-                                case "5": // Просмотр всех сотрудников
+                                case "5":
                                     var allUsers = _userService.GetAllUsers();
                                     if (allUsers.Length == 0)
                                     {
@@ -220,7 +221,7 @@ namespace ProjectManagementSystem
                                     }
                                     break;
 
-                                case "6": // Удаление сотрудника
+                                case "6":
                                     Console.WriteLine("\nВведите имя пользователя для удаления:");
                                     var usernameToDelete = Console.ReadLine().Trim();
                                     if (string.IsNullOrWhiteSpace(usernameToDelete))
@@ -228,7 +229,7 @@ namespace ProjectManagementSystem
                                         Console.WriteLine("Имя пользователя не может быть пустым. Попробуйте снова.");
                                         continue;
                                     }
-                                    
+
                                     if (_userService.DeleteUser(usernameToDelete))
                                     {
                                         Console.WriteLine("\nПользователь успешно удален.");
@@ -239,12 +240,34 @@ namespace ProjectManagementSystem
                                     }
                                     break;
 
+
+
                                 case "7":
+                                    Console.WriteLine("\nВведите ID задачи для удаления:");
+                                    var taskIdToDelete = Console.ReadLine().Trim();
+
+                                    if (!Guid.TryParse(taskIdToDelete, out var taskGuidToDelete))
+                                    {
+                                        Console.WriteLine("Неверный формат ID задачи. Попробуйте снова.");
+                                        continue;
+                                    }
+
+                                    if (_taskService.DeleteTask(taskGuidToDelete))
+                                    {
+                                        Console.WriteLine("\nЗадача успешно удалена.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("\nЗадача не найдена.");
+                                    }
+                                    break;
+
+                                case "8":
                                     currentUser = null;
                                     Console.WriteLine("\nВы вышли из системы.");
                                     break;
 
-                                case "8":
+                                case "9":
                                     return;
 
                                 default:
@@ -263,7 +286,7 @@ namespace ProjectManagementSystem
                                     var tasks = _taskService.GetTasksForUser(currentUser.Username);
                                     foreach (var task in tasks)
                                     {
-                                        Console.WriteLine($"\n{task.ProjectId} - {task.Title} ({task.Description}): {task.Status}");
+                                        Console.WriteLine($"\nid: {task.ProjectId} - {task.Title} ({task.Description}): {task.Status}");
                                     }
 
                                     if (tasks.Length == 0)

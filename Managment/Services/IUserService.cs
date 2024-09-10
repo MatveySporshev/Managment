@@ -9,5 +9,7 @@ namespace ProjectManagementSystem
         bool DeleteUser(string user);
 
         public User[] GetAllUsers();
+
+        public bool UserExists(string username);
     }
 }

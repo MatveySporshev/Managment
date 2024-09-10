@@ -9,6 +9,8 @@ namespace ProjectManagementSystem
         public WorkTask[] GetTasksForUser(string username);
         List<TaskLog> ViewTaskLogs(Guid taskId);
         public WorkTask[] GetAllTasks();
-    
+
+        bool DeleteTask(Guid taskId);
+
     }
 }

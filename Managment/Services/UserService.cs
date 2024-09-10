@@ -36,7 +36,7 @@ namespace ProjectManagementSystem
                 var json = File.ReadAllText(_filePath);
                 json = Utils.Decrypt(json);
                 var users = JsonConvert.DeserializeObject<List<User>>(json);
-                //Console.WriteLine($"Загружено пользователей: {users?.Count ?? 0}");
+                
                 return users ?? new List<User>();
             }
             return new List<User>();
@@ -46,11 +46,11 @@ namespace ProjectManagementSystem
         {
             try
             {
-                //Console.WriteLine($"Сохранение в файл: {Path.GetFullPath(_filePath)}");
+                
                 var json = JsonConvert.SerializeObject(_users, Formatting.Indented);
                 json = Utils.Encrypt(json);
                 File.WriteAllText(_filePath, json);
-                //Console.WriteLine("Данные о пользователях успешно записаны.");
+                
             }
             catch (Exception ex)
             {
@@ -82,6 +82,11 @@ namespace ProjectManagementSystem
         public User[] GetAllUsers()
         {
             return _users.ToArray();
+        }
+
+        public bool UserExists(string username)
+        {
+            return _users.Any(u => u.Username == username);
         }
     }
 
