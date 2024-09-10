@@ -18,7 +18,8 @@ namespace ProjectManagementSystem
         {
             if (UserExists(user.Username))
             {
-                throw new InvalidOperationException("Пользователь с таким именем уже существует.");
+                
+                return;
             }
 
             _users.Add(user);

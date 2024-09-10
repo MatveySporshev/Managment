@@ -1,5 +1,6 @@
 ﻿using Managment.Models;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel.Design;
 
 namespace ProjectManagementSystem
 {
@@ -34,7 +35,7 @@ namespace ProjectManagementSystem
             _userService = userService;
             _taskService = taskService;
 
-
+            GenerateStartData();
         }
 
         public void Run()
@@ -157,20 +158,28 @@ namespace ProjectManagementSystem
                                         Console.WriteLine("Пароль не может быть пустым. Попробуйте снова.");
                                         continue;
                                     }
-
-                                    try
+                                    if (!_userService.UserExists(newUsername))
                                     {
-                                        _userService.RegisterUser(new User
+                                        try
                                         {
-                                            Username = newUsername,
-                                            Password = newPassword,
-                                            Role = UserRole.Employee
-                                        });
-                                        Console.WriteLine("\nСотрудник успешно зарегистрирован.");
+                                            _userService.RegisterUser(new User
+                                            {
+                                                Username = newUsername,
+                                                Password = newPassword,
+                                                Role = UserRole.Employee
+                                            });
+                                            Console.WriteLine("\nСотрудник успешно зарегистрирован.");
+
+                                        }
+                                        catch (InvalidOperationException ex)
+                                        {
+                                            Console.WriteLine($"\n{ex.Message}");
+
+                                        }
                                     }
-                                    catch (InvalidOperationException ex)
+                                    else 
                                     {
-                                        Console.WriteLine($"\n{ex.Message}");
+                                        Console.WriteLine("\nСотрудник с таким именем уже существует");
                                     }
                                     break;
 
