@@ -23,16 +23,20 @@ namespace ProjectManagementSystem
 
         public void CreateTask(WorkTask task)
         {
-            if (!_userService.UserExists(task.Assignee))
-            {
-                throw new ArgumentException("Невозможно назначить задачу на несуществующего сотрудника.");
-            }
-            else
-            {
-                _tasks.Add(task);
+            if (task == null)
+                throw new ArgumentNullException(nameof(task));
+
+            
+            if (string.IsNullOrWhiteSpace(task.Title))
+                throw new ArgumentException("Заголовок задачи не может быть пустым", nameof(task.Title));
+
+            if (string.IsNullOrWhiteSpace(task.Description))
+                throw new ArgumentException("Описание задачи не может быть пустым", nameof(task.Description));
+
+            
+            _tasks.Add(task);
+
             SaveTasks();
-            _taskLogService.LogTaskChange(task.ProjectId.ToString(), task.Assignee, WorkTaskStage.ToDo, task.Status);
-            }
         }
 
         public void UpdateTaskStatus(string taskId, WorkTaskStage newStatus)
@@ -99,7 +103,7 @@ namespace ProjectManagementSystem
             {
                 var json = JsonConvert.SerializeObject(_tasks, Formatting.Indented);
                 File.WriteAllText(_filePath, json);
-                Console.WriteLine("Задачи успешно записаны.");
+                Console.WriteLine("Задачи успешно сохранены.");
             }
             catch (Exception ex)
             {
@@ -118,8 +122,11 @@ namespace ProjectManagementSystem
             if (task != null)
             {
                 _tasks.Remove(task);
-                
+
+                SaveTasks();
                 return true;
+
+
             }
             return false;
         }

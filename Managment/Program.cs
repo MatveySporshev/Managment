@@ -34,7 +34,7 @@ namespace ProjectManagementSystem
             _userService = userService;
             _taskService = taskService;
 
-            GenerateStartData();
+
         }
 
         public void Run()
@@ -102,39 +102,42 @@ namespace ProjectManagementSystem
                                 case "1":
                                     Console.WriteLine("\nВведите название задачи:");
                                     var title = Console.ReadLine().Trim();
-                                    if (string.IsNullOrWhiteSpace(title))
-                                    {
-                                        Console.WriteLine("Название задачи не может быть пустым. Попробуйте снова.");
-                                        continue;
-                                    }
-
                                     Console.WriteLine("\nВведите описание задачи:");
                                     var description = Console.ReadLine().Trim();
-                                    if (string.IsNullOrWhiteSpace(description))
-                                    {
-                                        Console.WriteLine("Описание задачи не может быть пустым. Попробуйте снова.");
-                                        continue;
-                                    }
-
                                     Console.WriteLine("\nНазначить задачу (имя пользователя сотрудника):");
                                     var assignee = Console.ReadLine().Trim();
-                                    if (_userService.UserExists(assignee))
-                                    {
-                                        var task = new WorkTask
-                                        {
-                                            ProjectId = Guid.NewGuid(),
-                                            Title = title,
-                                            Description = description,
-                                            Assignee = assignee,
-                                            Status = WorkTaskStage.ToDo
-                                        };
 
-                                        _taskService.CreateTask(task);
-                                        Console.WriteLine("\nЗадача успешно создана.");
+                                    if (_userService != null)
+                                    {
+                                        if (_userService.UserExists(assignee))
+                                        {
+                                            var task = new WorkTask
+                                            {
+                                                ProjectId = Guid.NewGuid(),
+                                                Title = title,
+                                                Description = description,
+                                                Assignee = assignee,
+                                                Status = WorkTaskStage.ToDo
+                                            };
+
+                                            try
+                                            {
+                                                _taskService.CreateTask(task);
+                                                Console.WriteLine("\nЗадача успешно создана.");
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Console.WriteLine($"\nПроизошла ошибка при создании задачи: {ex.Message}");                                         
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("\nНазначение задачи на несуществующего сотрудника невозможно. Попробуйте снова.");
+                                        }
                                     }
                                     else
                                     {
-                                        Console.WriteLine("\nНазначение задачи на несуществующего сотрудника невозможно. Попробуйте снова.");
+                                        Console.WriteLine("\nСервис пользователей не инициализирован.");
                                     }
                                     break;
 
@@ -143,7 +146,7 @@ namespace ProjectManagementSystem
                                     var newUsername = Console.ReadLine().Trim();
                                     if (string.IsNullOrWhiteSpace(newUsername))
                                     {
-                                        Console.WriteLine("Имя нового сотрудника не может быть пустым. Попробуйте снова.");
+                                        Console.WriteLine("Имя пользователя не может быть пустым. Попробуйте снова.");
                                         continue;
                                     }
 
@@ -155,13 +158,20 @@ namespace ProjectManagementSystem
                                         continue;
                                     }
 
-                                    _userService.RegisterUser(new User
+                                    try
                                     {
-                                        Username = newUsername,
-                                        Password = newPassword,
-                                        Role = UserRole.Employee
-                                    });
-
+                                        _userService.RegisterUser(new User
+                                        {
+                                            Username = newUsername,
+                                            Password = newPassword,
+                                            Role = UserRole.Employee
+                                        });
+                                        Console.WriteLine("\nСотрудник успешно зарегистрирован.");
+                                    }
+                                    catch (InvalidOperationException ex)
+                                    {
+                                        Console.WriteLine($"\n{ex.Message}");
+                                    }
                                     break;
 
                                 case "3":
@@ -229,9 +239,9 @@ namespace ProjectManagementSystem
                                         Console.WriteLine("Имя пользователя не может быть пустым. Попробуйте снова.");
                                         continue;
                                     }
-
-                                    if (_userService.DeleteUser(usernameToDelete))
+                                    if (_userService.UserExists(usernameToDelete))
                                     {
+                                        _userService.DeleteUser(usernameToDelete);
                                         Console.WriteLine("\nПользователь успешно удален.");
                                     }
                                     else
@@ -313,7 +323,7 @@ namespace ProjectManagementSystem
                                     }
 
                                     _taskService.UpdateTaskStatus(taskGuidToUpdate.ToString(), status);
-                                    Console.WriteLine("\nСтатус задачи обновлен.");
+                                    
                                     break;
 
                                 case "3":

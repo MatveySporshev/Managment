@@ -16,12 +16,9 @@ namespace ProjectManagementSystem
 
         public void RegisterUser(User user)
         {
-            if (_users.Select(x => x.Username)
-                .Contains(user.Username))
+            if (UserExists(user.Username))
             {
-                Console.WriteLine($"Пользователь с таким именем уже существует: {user.Username}");
-
-                return;
+                throw new InvalidOperationException("Пользователь с таким именем уже существует.");
             }
 
             _users.Add(user);
